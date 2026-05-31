@@ -3,8 +3,8 @@ import { getImagesForArtist, saveImages } from './storage';
 async function downloadImages(posts) {
   const results = [];
   for (const post of posts) {
-    // Prioritize large_file_url, then preview_file_url, then fallback to file_url
-    const imgUrl = post.large_file_url || post.preview_file_url || post.file_url;
+    // Prioritize preview_file_url (smallest), then large_file_url, then fallback to file_url
+    const imgUrl = post.preview_file_url || post.large_file_url || post.file_url;
     if (!imgUrl) continue;
 
     try {

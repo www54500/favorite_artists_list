@@ -40,6 +40,10 @@ export function ArtistRow({ artist, onRefresh, onDelete }) {
     }
   };
 
+  const handleImageClick = (postId) => {
+    window.open(`https://danbooru.donmai.us/posts/${postId}`, '_blank');
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transition-all hover:shadow-md">
       <div className="p-5 flex justify-between items-start bg-slate-50 border-b border-slate-100">
@@ -96,7 +100,7 @@ export function ArtistRow({ artist, onRefresh, onDelete }) {
               <div 
                 key={img.id} 
                 className="flex-none w-48 h-64 bg-slate-100 rounded-lg overflow-hidden snap-start cursor-pointer transition-transform hover:scale-[1.02]"
-                onClick={() => window.open(img.url, '_blank')}
+                onClick={() => handleImageClick(img.id)}
               >
                 <img 
                   src={img.url} 
