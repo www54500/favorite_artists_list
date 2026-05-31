@@ -23,6 +23,12 @@ function App() {
   }, []);
 
   const handleAddArtist = async (data) => {
+    const existing = artists.find(a => a.tag === data.tag);
+    if (existing) {
+      alert(`Artist with tag "${data.tag}" already exists as "${existing.name}".`);
+      return;
+    }
+
     const artist = {
       ...data,
       id: Date.now().toString()
