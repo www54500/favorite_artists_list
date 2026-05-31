@@ -4,6 +4,7 @@ import { getImagesForArtist } from '../services/storage';
 export function ArtistRow({ artist, onRefresh, onDelete }) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const loadImages = async () => {
     const imgs = await getImagesForArtist(artist.tag);
@@ -29,6 +30,16 @@ export function ArtistRow({ artist, onRefresh, onDelete }) {
     setLoading(false);
   };
 
+  const handleCopyTrigger = async () => {
+    try {
+      await navigator.clipboard.writeText(artist.trigger);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transition-all hover:shadow-md">
       <div className="p-5 flex justify-between items-start bg-slate-50 border-b border-slate-100">
@@ -36,9 +47,23 @@ export function ArtistRow({ artist, onRefresh, onDelete }) {
           <h3 className="text-xl font-bold text-slate-900">{artist.name}</h3>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Trigger:</span>
-            <code className="bg-slate-200 px-2 py-0.5 rounded text-sm text-slate-700 font-mono">
-              {artist.trigger}
-            </code>
+            <div className="relative flex items-center group">
+              <code 
+                onClick={handleCopyTrigger}
+                className="bg-slate-200 px-2 py-0.5 rounded text-sm text-slate-700 font-mono cursor-pointer hover:bg-slate-300 transition-colors flex items-center gap-1.5"
+                title="Click to copy"
+              >
+                {artist.trigger}
+                <svg className="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+              </code>
+              {copied && (
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded animate-in fade-in slide-in-from-bottom-1 duration-200">
+                  Copied!
+                </span>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex gap-2">
