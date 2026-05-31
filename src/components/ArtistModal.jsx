@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 
-export function AddModal({ onClose, onSubmit }) {
-  const [name, setName] = useState('');
-  const [trigger, setTrigger] = useState('');
-  const [tag, setTag] = useState('');
+export function ArtistModal({ onClose, onSubmit, initialData }) {
+  const [name, setName] = useState(initialData?.name || '');
+  const [trigger, setTrigger] = useState(initialData?.trigger || '');
+  const [tag, setTag] = useState(initialData?.tag || '');
   const [loading, setLoading] = useState(false);
+
+  const isEdit = !!initialData;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -13,7 +15,7 @@ export function AddModal({ onClose, onSubmit }) {
       await onSubmit({ name, trigger, tag });
       onClose();
     } catch (err) {
-      alert('Failed to add artist: ' + err.message);
+      alert(`Failed to ${isEdit ? 'update' : 'add'} artist: ` + err.message);
     } finally {
       setLoading(false);
     }
@@ -25,7 +27,9 @@ export function AddModal({ onClose, onSubmit }) {
         onSubmit={handleSubmit} 
         className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-200"
       >
-        <h2 className="text-2xl font-bold mb-6 text-slate-800">Add New Artist</h2>
+        <h2 className="text-2xl font-bold mb-6 text-slate-800">
+          {isEdit ? 'Edit Artist' : 'Add New Artist'}
+        </h2>
         
         <div className="space-y-4">
           <div>
@@ -83,7 +87,7 @@ export function AddModal({ onClose, onSubmit }) {
                 </svg>
                 Saving...
               </>
-            ) : 'Save Artist'}
+            ) : isEdit ? 'Update Artist' : 'Save Artist'}
           </button>
         </div>
       </form>

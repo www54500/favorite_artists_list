@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
-import { AddModal } from './components/AddModal';
+import { ArtistModal } from './components/ArtistModal';
 import { ArtistRow } from './components/ArtistRow';
 import { BackToTop } from './components/BackToTop';
-import { getArtists, deleteArtist, saveArtist } from './services/storage';
+import { getArtists, deleteArtist, saveArtist, deleteImagesForArtist } from './services/storage';
 import { refreshImages, fetchLatestImages } from './services/danbooru';
 import { generateExportData, processImportData } from './services/backup';
 
 function App() {
   const [artists, setArtists] = useState([]);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [editingArtist, setEditingArtist] = useState(null);
   const [bulkToggleSignal, setBulkToggleSignal] = useState(null);
 
   const loadArtists = async () => {
@@ -31,14 +32,43 @@ function App() {
     await loadArtists();
   };
 
+  const handleUpdateArtist = async (data) => {
+    const oldTag = editingArtist.tag;
+    const newTag = data.tag;
+    
+    const updatedArtist = {
+      ...editingArtist,
+      ...data
+    };
+
+    await saveArtist(updatedArtist);
+
+    if (oldTag !== newTag) {
+      await deleteImagesForArtist(oldTag);
+      await fetchLatestImages(newTag);
+    }
+
+    await loadArtists();
+  };
+
   const handleBulkToggle = (collapsed) => {
     setBulkToggleSignal({ collapsed, timestamp: Date.now() });
+  };
+
+  const openAddModal = () => {
+    setEditingArtist(null);
+    setShowModal(true);
+  };
+
+  const openEditModal = (artist) => {
+    setEditingArtist(artist);
+    setShowModal(true);
   };
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 pb-20">
       <Header 
-        onAddClick={() => setShowAddModal(true)}
+        onAddClick={openAddModal}
         onExport={async () => {
           const data = await generateExportData();
           const blob = new Blob([data], { type: 'application/json' });
@@ -63,6 +93,7 @@ function App() {
               key={artist.id} 
               artist={artist} 
               onRefresh={refreshImages}
+              onEdit={openEditModal}
               onDelete={async (id, tag) => {
                 if (confirm(`Delete ${artist.name}?`)) {
                   await deleteArtist(id, tag);
@@ -82,10 +113,11 @@ function App() {
 
       <BackToTop />
 
-      {showAddModal && (
-        <AddModal 
-          onClose={() => setShowAddModal(false)}
-          onSubmit={handleAddArtist}
+      {showModal && (
+        <ArtistModal 
+          onClose={() => setShowModal(false)}
+          onSubmit={editingArtist ? handleUpdateArtist : handleAddArtist}
+          initialData={editingArtist}
         />
       )}
     </div>

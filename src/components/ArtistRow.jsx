@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getImagesForArtist } from '../services/storage';
 
-export function ArtistRow({ artist, onRefresh, onDelete, bulkToggleSignal }) {
+export function ArtistRow({ artist, onRefresh, onDelete, onEdit, bulkToggleSignal }) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -67,7 +67,17 @@ export function ArtistRow({ artist, onRefresh, onDelete, bulkToggleSignal }) {
             </svg>
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-900">{artist.name}</h3>
+            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <a 
+                href={`https://danbooru.donmai.us/artists/show?name=${encodeURIComponent(artist.tag)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-blue-600 transition-colors"
+                onClick={e => e.stopPropagation()}
+              >
+                {artist.name}
+              </a>
+            </h3>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Trigger:</span>
               <div className="relative flex items-center group">
@@ -91,6 +101,15 @@ export function ArtistRow({ artist, onRefresh, onDelete, bulkToggleSignal }) {
           </div>
         </div>
         <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+          <button 
+            onClick={() => onEdit(artist)}
+            className="p-2 text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
+            title="Edit Artist"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+          </button>
           <button 
             onClick={handleRefresh}
             disabled={loading}

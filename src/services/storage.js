@@ -50,9 +50,13 @@ export async function getImagesForArtist(artistTag) {
   return (await imagesStore.getItem(artistTag)) || [];
 }
 
+export async function deleteImagesForArtist(artistTag) {
+  await imagesStore.removeItem(artistTag);
+}
+
 export async function deleteArtist(artistId, artistTag) {
   const artists = await getArtists();
   const updated = artists.filter(a => a.id !== artistId);
   await artistsStore.setItem('all', updated);
-  await imagesStore.removeItem(artistTag);
+  await deleteImagesForArtist(artistTag);
 }
