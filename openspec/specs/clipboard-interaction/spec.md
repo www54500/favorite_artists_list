@@ -1,4 +1,9 @@
-# Requirements
+# Clipboard Interaction
+
+## Purpose
+Define requirements for system clipboard interactions, specifically for copying text.
+
+## Requirements
 
 ### Requirement: Copy to clipboard utility
 The system SHALL provide a reliable way to copy plain text to the user's system clipboard.

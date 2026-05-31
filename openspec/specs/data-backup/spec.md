@@ -1,4 +1,9 @@
-# Requirements
+# Data Backup
+
+## Purpose
+Define requirements for exporting and importing artist data to ensure portability and data safety.
+
+## Requirements
 
 ### Requirement: Data export
 The system SHALL allow users to export their artist metadata (names, trigger words, tags) to a JSON file.

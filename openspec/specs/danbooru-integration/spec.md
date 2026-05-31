@@ -1,4 +1,9 @@
-# Requirements
+# Danbooru Integration
+
+## Purpose
+Define requirements for fetching and storing visual references from the Danbooru image board API.
+
+## Requirements
 
 ### Requirement: Conditional image fetching
 The system SHALL only fetch images from Danbooru if no images exist in the local database for the given artist tag.
@@ -53,10 +58,3 @@ The system SHALL fetch and store example images from Danbooru using the best ava
   6. `preview_file_url` legacy field
   7. `large_file_url` legacy field
   8. `file_url` legacy field
-
-### Requirement: Navigation to Danbooru post
-The system SHALL allow users to navigate to the original Danbooru post page for any image in the gallery.
-
-#### Scenario: Clicking a gallery image
-- **WHEN** the user clicks a thumbnail in the artist carousel
-- **THEN** the system SHALL open the corresponding Danbooru post page (`https://danbooru.donmai.us/posts/{id}`) in a new browser tab

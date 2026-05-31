@@ -1,4 +1,9 @@
-# Requirements
+# Artist Management
+
+## Purpose
+Define requirements for managing the list of favorite artists, including creation, deletion, and metadata interactions.
+
+## Requirements
 
 ### Requirement: Artist creation
 The system SHALL allow users to create a new artist entry by providing a name, SD trigger word, and Danbooru tag.
