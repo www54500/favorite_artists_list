@@ -26,3 +26,10 @@ The system SHALL allow users to copy an artist's SD trigger word to their clipbo
 - **WHEN** the user clicks on the SD trigger word or its associated "Copy" button
 - **THEN** the trigger word text is copied to the clipboard
 - **AND** the system SHALL display temporary visual feedback (e.g., "Copied!")
+
+### Requirement: Collapsible artist galleries
+The system SHALL allow users to toggle the visibility of each artist's image gallery independently.
+
+#### Scenario: Toggling gallery visibility
+- **WHEN** the user clicks the expand/collapse toggle for an artist
+- **THEN** the system SHALL show or hide the image gallery for that specific artist
