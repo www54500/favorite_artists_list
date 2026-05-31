@@ -38,3 +38,11 @@ The system SHALL display all locally stored images for an artist in the carousel
 #### Scenario: Displaying more than 8 images
 - **WHEN** an artist has 15 images stored locally
 - **THEN** the system SHALL render all 15 images in the artist's carousel
+
+### Requirement: Optimized image resolution
+The system SHALL fetch and store example images from Danbooru using optimized web-resolutions to balance visual quality and performance.
+
+#### Scenario: Downloading optimized images
+- **WHEN** the system downloads an image from Danbooru
+- **THEN** it SHALL prioritize the `large_file_url` or `preview_file_url` provided by the API
+- **AND** it SHALL only fallback to the original `file_url` if lower resolutions are unavailable
