@@ -45,13 +45,18 @@ describe('Danbooru Service', () => {
     expect(storage.saveImages).toHaveBeenCalledWith('artguy', expect.any(Array));
   });
 
-  it('prioritizes preview_file_url over others', async () => {
+  it('prioritizes 360x360 variant over everything else', async () => {
     storage.getImagesForArtist.mockResolvedValue([]);
     const mockPosts = [
       { 
-        id: 201, 
-        file_url: 'full.jpg', 
-        large_file_url: 'large.jpg', 
+        id: 301, 
+        media_asset: {
+          variants: [
+            { type: 'original', url: 'original.jpg' },
+            { type: '360x360', url: '360.jpg' },
+            { type: 'sample', url: 'sample.jpg' }
+          ]
+        },
         preview_file_url: 'preview.jpg' 
       }
     ];
@@ -60,19 +65,20 @@ describe('Danbooru Service', () => {
 
     await fetchLatestImages('artguy');
     
-    // First call was to the API
-    expect(global.fetch.mock.calls[0][0]).toContain('danbooru.donmai.us');
-    // Second call should be to preview.jpg (highest priority now)
-    expect(global.fetch.mock.calls[1][0]).toBe('preview.jpg');
+    expect(global.fetch.mock.calls[1][0]).toBe('360.jpg');
   });
 
-  it('falls back to large_file_url if preview is missing', async () => {
+  it('falls back through variant priority list', async () => {
     storage.getImagesForArtist.mockResolvedValue([]);
     const mockPosts = [
       { 
-        id: 202, 
-        file_url: 'full.jpg', 
-        large_file_url: 'large.jpg' 
+        id: 302, 
+        media_asset: {
+          variants: [
+            { type: 'original', url: 'original.jpg' },
+            { type: '180x180', url: '180.jpg' }
+          ]
+        }
       }
     ];
     global.fetch.mockResolvedValueOnce({ ok: true, json: async () => mockPosts });
@@ -80,6 +86,27 @@ describe('Danbooru Service', () => {
 
     await fetchLatestImages('artguy');
     
-    expect(global.fetch.mock.calls[1][0]).toBe('large.jpg');
+    expect(global.fetch.mock.calls[1][0]).toBe('180.jpg');
+  });
+
+  it('falls back to legacy preview_file_url if no variants match', async () => {
+    storage.getImagesForArtist.mockResolvedValue([]);
+    const mockPosts = [
+      { 
+        id: 303, 
+        media_asset: {
+          variants: [
+            { type: 'unknown', url: 'unknown.jpg' }
+          ]
+        },
+        preview_file_url: 'preview-legacy.jpg'
+      }
+    ];
+    global.fetch.mockResolvedValueOnce({ ok: true, json: async () => mockPosts });
+    global.fetch.mockResolvedValue({ ok: true, blob: async () => new Blob(['data']) });
+
+    await fetchLatestImages('artguy');
+    
+    expect(global.fetch.mock.calls[1][0]).toBe('preview-legacy.jpg');
   });
 });

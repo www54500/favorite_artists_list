@@ -1,10 +1,22 @@
 import { getImagesForArtist, saveImages } from './storage';
 
+function getBestImageUrl(post) {
+  const variants = post.media_asset?.variants || [];
+  const variantPriority = ['360x360', '180x180', '720x720', 'sample', 'original'];
+
+  for (const type of variantPriority) {
+    const variant = variants.find(v => v.type === type);
+    if (variant?.url) return variant.url;
+  }
+
+  // Legacy fallbacks
+  return post.preview_file_url || post.large_file_url || post.file_url;
+}
+
 async function downloadImages(posts) {
   const results = [];
   for (const post of posts) {
-    // Prioritize preview_file_url (smallest), then large_file_url, then fallback to file_url
-    const imgUrl = post.preview_file_url || post.large_file_url || post.file_url;
+    const imgUrl = getBestImageUrl(post);
     if (!imgUrl) continue;
 
     try {
