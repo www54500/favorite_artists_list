@@ -25,15 +25,39 @@ describe('Backup Service', () => {
     expect(parsed[0].id).toBeUndefined(); // Should strip IDs for portability
   });
 
-  it('processes import data and fetches images', async () => {
+  it('processes import data for new artist', async () => {
     const importData = JSON.stringify([
       { name: 'Bob', trigger: 'bob_style', tag: 'bob' }
     ]);
-    danbooru.fetchLatestImages.mockResolvedValue([]); // Return empty array instead of undefined
+    storage.getArtists.mockResolvedValue([]);
+    danbooru.fetchLatestImages.mockResolvedValue([]);
     
     await processImportData(importData);
     
-    expect(storage.saveArtist).toHaveBeenCalled();
+    expect(storage.saveArtist).toHaveBeenCalledWith(expect.objectContaining({
+      name: 'Bob',
+      tag: 'bob'
+    }));
+    expect(danbooru.fetchLatestImages).toHaveBeenCalledWith('bob');
+  });
+
+  it('updates existing artist during import without duplicating', async () => {
+    const importData = JSON.stringify([
+      { name: 'Bob Updated', trigger: 'new_trigger', tag: 'bob' }
+    ]);
+    const existing = { id: 'original-id', name: 'Bob', trigger: 'old', tag: 'bob' };
+    storage.getArtists.mockResolvedValue([existing]);
+    danbooru.fetchLatestImages.mockResolvedValue([]);
+    
+    await processImportData(importData);
+    
+    // Should call saveArtist with original ID but updated metadata
+    expect(storage.saveArtist).toHaveBeenCalledWith({
+      id: 'original-id',
+      name: 'Bob Updated',
+      trigger: 'new_trigger',
+      tag: 'bob'
+    });
     expect(danbooru.fetchLatestImages).toHaveBeenCalledWith('bob');
   });
 });

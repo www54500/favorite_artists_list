@@ -9,15 +9,30 @@ export async function generateExportData() {
 }
 
 export async function processImportData(jsonString) {
-  const artists = JSON.parse(jsonString);
-  for (const artist of artists) {
-    // Re-generate ID for portability/freshness or just use existing if available
-    const portableArtist = {
-      ...artist,
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 5)
-    };
-    await saveArtist(portableArtist);
-    // Trigger background fetch
-    fetchLatestImages(portableArtist.tag).catch(e => console.error('Import fetch failed', portableArtist.tag, e));
+  const importedArtists = JSON.parse(jsonString);
+  const currentArtists = await getArtists();
+
+  for (const imported of importedArtists) {
+    const existing = currentArtists.find(a => a.tag === imported.tag);
+    
+    let artistToSave;
+    if (existing) {
+      // Update existing metadata but keep the ID
+      artistToSave = {
+        ...existing,
+        name: imported.name,
+        trigger: imported.trigger
+      };
+    } else {
+      // Create new artist
+      artistToSave = {
+        ...imported,
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 5)
+      };
+    }
+
+    await saveArtist(artistToSave);
+    // Trigger background fetch (handles lazy-fetching internally)
+    fetchLatestImages(artistToSave.tag).catch(e => console.error('Import fetch failed', artistToSave.tag, e));
   }
 }
