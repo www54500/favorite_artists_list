@@ -44,4 +44,42 @@ describe('Danbooru Service', () => {
     // Should save new images
     expect(storage.saveImages).toHaveBeenCalledWith('artguy', expect.any(Array));
   });
+
+  it('prioritizes large_file_url over others', async () => {
+    storage.getImagesForArtist.mockResolvedValue([]);
+    const mockPosts = [
+      { 
+        id: 201, 
+        file_url: 'full.jpg', 
+        large_file_url: 'large.jpg', 
+        preview_file_url: 'preview.jpg' 
+      }
+    ];
+    global.fetch.mockResolvedValueOnce({ ok: true, json: async () => mockPosts });
+    global.fetch.mockResolvedValue({ ok: true, blob: async () => new Blob(['data']) });
+
+    await fetchLatestImages('artguy');
+    
+    // First call was to the API
+    expect(global.fetch.mock.calls[0][0]).toContain('danbooru.donmai.us');
+    // Second call should be to large.jpg
+    expect(global.fetch.mock.calls[1][0]).toBe('large.jpg');
+  });
+
+  it('falls back to preview_file_url if large is missing', async () => {
+    storage.getImagesForArtist.mockResolvedValue([]);
+    const mockPosts = [
+      { 
+        id: 202, 
+        file_url: 'full.jpg', 
+        preview_file_url: 'preview.jpg' 
+      }
+    ];
+    global.fetch.mockResolvedValueOnce({ ok: true, json: async () => mockPosts });
+    global.fetch.mockResolvedValue({ ok: true, blob: async () => new Blob(['data']) });
+
+    await fetchLatestImages('artguy');
+    
+    expect(global.fetch.mock.calls[1][0]).toBe('preview.jpg');
+  });
 });
