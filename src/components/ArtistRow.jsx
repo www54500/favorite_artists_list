@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { getImagesForArtist } from '../services/storage';
 
-export function ArtistRow({ artist, onRefresh, onDelete }) {
+export function ArtistRow({ artist, onRefresh, onDelete, bulkToggleSignal }) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const loadImages = async () => {
     const imgs = await getImagesForArtist(artist.tag);
@@ -23,14 +24,23 @@ export function ArtistRow({ artist, onRefresh, onDelete }) {
     };
   }, [artist.tag]);
 
+  // Listen for global toggle signals
+  useEffect(() => {
+    if (bulkToggleSignal) {
+      setIsCollapsed(bulkToggleSignal.collapsed);
+    }
+  }, [bulkToggleSignal]);
+
   const handleRefresh = async () => {
     setLoading(true);
     await onRefresh(artist.tag);
     await loadImages();
     setLoading(false);
+    setIsCollapsed(false); // Expand on refresh to show new images
   };
 
-  const handleCopyTrigger = async () => {
+  const handleCopyTrigger = async (e) => {
+    e.stopPropagation(); // Don't toggle collapse when copying
     try {
       await navigator.clipboard.writeText(artist.trigger);
       setCopied(true);
@@ -46,31 +56,41 @@ export function ArtistRow({ artist, onRefresh, onDelete }) {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transition-all hover:shadow-md">
-      <div className="p-5 flex justify-between items-start bg-slate-50 border-b border-slate-100">
-        <div>
-          <h3 className="text-xl font-bold text-slate-900">{artist.name}</h3>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Trigger:</span>
-            <div className="relative flex items-center group">
-              <code 
-                onClick={handleCopyTrigger}
-                className="bg-slate-200 px-2 py-0.5 rounded text-sm text-slate-700 font-mono cursor-pointer hover:bg-slate-300 transition-colors flex items-center gap-1.5"
-                title="Click to copy"
-              >
-                {artist.trigger}
-                <svg className="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                </svg>
-              </code>
-              {copied && (
-                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded animate-in fade-in slide-in-from-bottom-1 duration-200">
-                  Copied!
-                </span>
-              )}
+      <div 
+        className="p-5 flex justify-between items-start bg-slate-50 border-b border-slate-100 cursor-pointer select-none"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+      >
+        <div className="flex items-start gap-4">
+          <div className={`mt-1.5 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`}>
+            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-slate-900">{artist.name}</h3>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Trigger:</span>
+              <div className="relative flex items-center group">
+                <code 
+                  onClick={handleCopyTrigger}
+                  className="bg-slate-200 px-2 py-0.5 rounded text-sm text-slate-700 font-mono cursor-pointer hover:bg-slate-300 transition-colors flex items-center gap-1.5"
+                  title="Click to copy"
+                >
+                  {artist.trigger}
+                  <svg className="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                  </svg>
+                </code>
+                {copied && (
+                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded animate-in fade-in slide-in-from-bottom-1 duration-200">
+                    Copied!
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2" onClick={e => e.stopPropagation()}>
           <button 
             onClick={handleRefresh}
             disabled={loading}
@@ -93,30 +113,32 @@ export function ArtistRow({ artist, onRefresh, onDelete }) {
         </div>
       </div>
 
-      <div className="p-4">
-        {images.length > 0 ? (
-          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-            {images.map((img) => (
-              <div 
-                key={img.id} 
-                className="flex-none w-48 h-64 bg-slate-100 rounded-lg overflow-hidden snap-start cursor-pointer transition-transform hover:scale-[1.02]"
-                onClick={() => handleImageClick(img.id)}
-              >
-                <img 
-                  src={img.url} 
-                  alt={`${artist.name} artwork`} 
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="h-64 flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
-            {loading ? 'Fetching images...' : 'No images found. Click refresh to fetch.'}
-          </div>
-        )}
-      </div>
+      {!isCollapsed && (
+        <div className="p-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          {images.length > 0 ? (
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
+              {images.map((img) => (
+                <div 
+                  key={img.id} 
+                  className="flex-none w-48 h-64 bg-slate-100 rounded-lg overflow-hidden snap-start cursor-pointer transition-transform hover:scale-[1.02]"
+                  onClick={() => handleImageClick(img.id)}
+                >
+                  <img 
+                    src={img.url} 
+                    alt={`${artist.name} artwork`} 
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="h-64 flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
+              {loading ? 'Fetching images...' : 'No images found. Click refresh to fetch.'}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

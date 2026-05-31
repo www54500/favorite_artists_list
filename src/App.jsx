@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { AddModal } from './components/AddModal';
 import { ArtistRow } from './components/ArtistRow';
+import { BackToTop } from './components/BackToTop';
 import { getArtists, deleteArtist, saveArtist } from './services/storage';
 import { refreshImages, fetchLatestImages } from './services/danbooru';
 import { generateExportData, processImportData } from './services/backup';
@@ -9,6 +10,7 @@ import { generateExportData, processImportData } from './services/backup';
 function App() {
   const [artists, setArtists] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [bulkToggleSignal, setBulkToggleSignal] = useState(null);
 
   const loadArtists = async () => {
     const list = await getArtists();
@@ -24,15 +26,17 @@ function App() {
       ...data,
       id: Date.now().toString()
     };
-    // Save metadata first
     await saveArtist(artist);
-    // Trigger image fetch (handles saving blobs internally)
     await fetchLatestImages(artist.tag);
     await loadArtists();
   };
 
+  const handleBulkToggle = (collapsed) => {
+    setBulkToggleSignal({ collapsed, timestamp: Date.now() });
+  };
+
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900">
+    <div className="min-h-screen bg-slate-100 text-slate-900 pb-20">
       <Header 
         onAddClick={() => setShowAddModal(true)}
         onExport={async () => {
@@ -48,6 +52,8 @@ function App() {
           await processImportData(json);
           await loadArtists();
         }}
+        onExpandAll={() => handleBulkToggle(false)}
+        onCollapseAll={() => handleBulkToggle(true)}
       />
 
       <main className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-6">
@@ -63,6 +69,7 @@ function App() {
                   await loadArtists();
                 }
               }}
+              bulkToggleSignal={bulkToggleSignal}
             />
           ))
         ) : (
@@ -72,6 +79,8 @@ function App() {
           </div>
         )}
       </main>
+
+      <BackToTop />
 
       {showAddModal && (
         <AddModal 
