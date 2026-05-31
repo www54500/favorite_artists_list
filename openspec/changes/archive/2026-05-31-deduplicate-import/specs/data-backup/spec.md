@@ -1,16 +1,11 @@
-# Data Backup
+# Data Backup (Delta)
 
 ## Purpose
-Define requirements for exporting and importing artist data to ensure portability and data safety.
+Ensure that data importing is idempotent and handles duplicate artist tags correctly.
 
 ## Requirements
 
-### Requirement: Data export
-The system SHALL allow users to export their artist metadata (names, trigger words, tags) to a JSON file.
-
-#### Scenario: Exporting data to JSON
-- **WHEN** the user clicks the "Export" button
-- **THEN** the system generates and downloads a JSON file containing all artist metadata (excluding image blobs)
+## MODIFIED Requirements
 
 ### Requirement: Data import
 The system SHALL allow users to import artist metadata from a previously exported JSON file while preventing duplicate entries.
