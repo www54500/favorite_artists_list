@@ -52,3 +52,17 @@ The system SHALL provide a direct link to the artist's posts on Danbooru.
 #### Scenario: Clicking artist name
 - **WHEN** the user clicks the artist name in the list
 - **THEN** the system SHALL open the Danbooru posts page (`https://danbooru.donmai.us/posts?tags={tag}`) in a new tab
+
+### Requirement: Automatic field population from tag
+The system SHALL automatically populate the Artist Name and SD Trigger Word fields when a Danbooru Tag is entered in the artist modal.
+
+#### Scenario: Auto-fill Name from Tag
+- **WHEN** the user types `mona_lisa` into the Danbooru Tag field
+- **AND** the Artist Name field is empty
+- **THEN** the system SHALL set the Artist Name to `Mona Lisa`
+
+#### Scenario: Auto-fill SD Trigger from Tag
+- **WHEN** the user types `artist_(name)` into the Danbooru Tag field
+- **AND** the SD Trigger Word field is empty
+- **THEN** the system SHALL set the SD Trigger Word to `artist_\(name\)`
+
