@@ -6,7 +6,42 @@ export function ArtistModal({ onClose, onSubmit, initialData }) {
   const [tag, setTag] = useState(initialData?.tag || '');
   const [loading, setLoading] = useState(false);
 
+  // Track the values that were automatically filled to avoid overwriting manual changes
+  const [autoFilledName, setAutoFilledName] = useState('');
+  const [autoFilledTrigger, setAutoFilledTrigger] = useState('');
+
   const isEdit = !!initialData;
+
+  const formatName = (tagStr) => {
+    return tagStr
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, char => char.toUpperCase());
+  };
+
+  const formatTrigger = (tagStr) => {
+    return tagStr
+      .replace(/\(/g, '\\(')
+      .replace(/\)/g, '\\)');
+  };
+
+  const handleTagChange = (newTag) => {
+    setTag(newTag);
+
+    const newAutoName = formatName(newTag);
+    const newAutoTrigger = formatTrigger(newTag);
+
+    // Auto-fill Name if it's empty or currently matches the previously auto-filled value
+    if (name === '' || name === autoFilledName) {
+      setName(newAutoName);
+      setAutoFilledName(newAutoName);
+    }
+
+    // Auto-fill Trigger if it's empty or currently matches the previously auto-filled value
+    if (trigger === '' || trigger === autoFilledTrigger) {
+      setTrigger(newAutoTrigger);
+      setAutoFilledTrigger(newAutoTrigger);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,6 +68,17 @@ export function ArtistModal({ onClose, onSubmit, initialData }) {
         
         <div className="space-y-4">
           <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Danbooru Tag</label>
+            <input 
+              required 
+              placeholder="e.g. wlop" 
+              value={tag} 
+              onChange={e => handleTagChange(e.target.value)} 
+              className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all" 
+            />
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Artist Name</label>
             <input 
               required 
@@ -50,17 +96,6 @@ export function ArtistModal({ onClose, onSubmit, initialData }) {
               placeholder="e.g. wlop style" 
               value={trigger} 
               onChange={e => setTrigger(e.target.value)} 
-              className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all" 
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Danbooru Tag</label>
-            <input 
-              required 
-              placeholder="e.g. wlop" 
-              value={tag} 
-              onChange={e => setTag(e.target.value)} 
               className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all" 
             />
           </div>

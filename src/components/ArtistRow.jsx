@@ -69,7 +69,7 @@ export function ArtistRow({ artist, onRefresh, onDelete, onEdit, bulkToggleSigna
           <div>
             <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
               <a 
-                href={`https://danbooru.donmai.us/artists/show?name=${encodeURIComponent(artist.tag)}`}
+                href={`https://danbooru.donmai.us/posts?tags=${encodeURIComponent(artist.tag)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="hover:text-blue-600 transition-colors"
