@@ -6,11 +6,16 @@ Define requirements for managing the list of favorite artists, including creatio
 ## Requirements
 
 ### Requirement: Artist creation
-The system SHALL allow users to create a new artist entry by providing a name, SD trigger word, and Danbooru tag.
+The system SHALL allow users to create a new artist entry by providing a name, SD trigger word, and Danbooru tag, while preventing duplicates.
 
 #### Scenario: Successful artist creation
-- **WHEN** the user submits the "Add Artist" form with valid data
+- **WHEN** the user submits the "Add Artist" form with a unique Danbooru tag
 - **THEN** a new artist entry is created in the local database and displayed in the list
+
+#### Scenario: Prevent duplicate artist addition
+- **WHEN** the user submits the "Add Artist" form with a Danbooru tag that already exists in the list
+- **THEN** the system SHALL show an alert mentioning the existing artist's name
+- **AND** the system SHALL NOT create a new artist entry
 
 ### Requirement: Artist deletion
 The system SHALL allow users to remove an artist from their list.
