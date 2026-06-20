@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function Header({ onAddClick, onExport, onImport, onExpandAll, onCollapseAll }) {
+export function Header({ onAddClick, onExport, onImport, onExpandAll, onCollapseAll, onCloudSync }) {
   const handleImport = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -21,6 +21,12 @@ export function Header({ onAddClick, onExport, onImport, onExpandAll, onCollapse
             Add Artist
           </button>
           <div className="h-8 w-px bg-slate-700 mx-1 self-center" />
+          <button 
+            onClick={onCloudSync} 
+            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors text-sm font-semibold shadow-sm"
+          >
+            Cloud Sync
+          </button>
           <button 
             onClick={onExport} 
             className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition-colors text-sm font-medium"

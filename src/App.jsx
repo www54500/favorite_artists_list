@@ -6,12 +6,27 @@ import { BackToTop } from './components/BackToTop';
 import { getArtists, deleteArtist, saveArtist, deleteImagesForArtist } from './services/storage';
 import { refreshImages, fetchLatestImages } from './services/danbooru';
 import { generateExportData, processImportData } from './services/backup';
+import { CloudSyncModal } from './components/CloudSyncModal';
+import { fetchGist, updateGist } from './services/githubGist';
 
 function App() {
   const [artists, setArtists] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingArtist, setEditingArtist] = useState(null);
   const [bulkToggleSignal, setBulkToggleSignal] = useState(null);
+  const [showCloudSyncModal, setShowCloudSyncModal] = useState(false);
+
+  const handleCloudUpload = async (token, gistId) => {
+    const data = await generateExportData();
+    const parsedData = JSON.parse(data);
+    await updateGist(token, gistId, parsedData);
+  };
+
+  const handleCloudDownload = async (token, gistId) => {
+    const dataObj = await fetchGist(token, gistId);
+    await processImportData(JSON.stringify(dataObj));
+    await loadArtists();
+  };
 
   const loadArtists = async () => {
     const list = await getArtists();
@@ -88,6 +103,7 @@ function App() {
           await processImportData(json);
           await loadArtists();
         }}
+        onCloudSync={() => setShowCloudSyncModal(true)}
         onExpandAll={() => handleBulkToggle(false)}
         onCollapseAll={() => handleBulkToggle(true)}
       />
@@ -124,6 +140,14 @@ function App() {
           onClose={() => setShowModal(false)}
           onSubmit={editingArtist ? handleUpdateArtist : handleAddArtist}
           initialData={editingArtist}
+        />
+      )}
+
+      {showCloudSyncModal && (
+        <CloudSyncModal
+          onClose={() => setShowCloudSyncModal(false)}
+          onUpload={handleCloudUpload}
+          onDownload={handleCloudDownload}
         />
       )}
     </div>
